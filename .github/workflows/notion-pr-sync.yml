@@ -39,7 +39,7 @@ jobs:
             -H "Content-Type: application/json" \
             --data "{
               \"filter\": {
-                \"property\": \"Name\",
+                \"property\": \"Task\",
                 \"title\": {
                   \"contains\": \"${{ env.TS_TASK_ID }}\"
                 }
