@@ -1,6 +1,6 @@
 name: "✉️ Issue"
-description: "이슈 템플릿"
-title: "TS-번호: 내용"
+description: "이슈 작성"
+title: "TS-번호: "
 body:
   - type: textarea
     attributes:

@@ -1,0 +1,7 @@
+blank_issues_enabled: false
+issue_templates:
+  - name: ✉️ Issue
+    description: 이슈 작성
+    title: "TS-번호: "
+    assignees: ""
+    template: other_issues_template.yml
