@@ -1,3 +1,4 @@
+# .github/workflows/notion-pr-sync.yml
 name: Update Notion Task Status on PR Merge
 
 on:
@@ -6,48 +7,65 @@ on:
 
 jobs:
   update-notion-task:
+    # PR이 병합되었을 때만 실행합니다.
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
 
     steps:
+      # 1. PR의 제목과 본문에서 'TS-숫자' 형식의 태스크 ID를 추출합니다.
       - name: Extract TS Task ID from PR title/body
         id: extract
         run: |
+          # 정규표현식을 사용하여 'TS-123'과 같은 패턴을 찾습니다.
           MATCH=$(echo "${{ github.event.pull_request.title }} ${{ github.event.pull_request.body }}" | grep -oE 'TS-[0-9]+')
+          
+          # 매칭되는 ID가 없으면 워크플로우를 중단합니다.
           if [ -z "$MATCH" ]; then
-            echo "No TS Task ID found"
+            echo "No TS Task ID found in PR."
             exit 0
           fi
+          
+          # 찾은 ID를 후속 스텝에서 사용할 수 있도록 환경 변수로 설정합니다.
           echo "TS_TASK_ID=$MATCH" >> $GITHUB_ENV
           echo "Found Notion Task ID: $MATCH"
 
-      - name: Query Notion for Task
+      # 2. Notion API를 호출하여 태스크 ID에 해당하는 페이지를 찾아 상태를 업데이트합니다.
+      - name: Update Notion Task Status
         run: |
-          curl -X POST "https://api.notion.com/v1/databases/${{ secrets.NOTION_DATABASE_ID }}/query" \
+          # Notion 데이터베이스에서 태스크 ID를 포함하는 페이지를 검색합니다.
+          QUERY_RESULT=$(curl -s -X POST "https://api.notion.com/v1/databases/${{ secrets.NOTION_DATABASE_ID }}/query" \
             -H "Authorization: Bearer ${{ secrets.NOTION_API_KEY }}" \
             -H "Notion-Version: 2022-06-28" \
             -H "Content-Type: application/json" \
             --data "{
               \"filter\": {
                 \"property\": \"Name\",
-                \"title\": {\"contains\": \"$TS_TASK_ID\"}
+                \"title\": {
+                  \"contains\": \"${{ env.TS_TASK_ID }}\"
+                }
               }
-            }" > notion_result.json
+            }")
 
-          PAGE_ID=$(jq -r '.results[0].id' notion_result.json)
+          # 검색 결과에서 페이지 ID를 추출합니다.
+          PAGE_ID=$(echo $QUERY_RESULT | jq -r '.results[0].id')
 
+          # 페이지 ID가 존재하고 null이 아닐 경우에만 업데이트를 진행합니다.
           if [ "$PAGE_ID" != "null" ]; then
-            curl -X PATCH "https://api.notion.com/v1/pages/$PAGE_ID" \
+            echo "Updating Notion page: $PAGE_ID"
+            curl -s -X PATCH "https://api.notion.com/v1/pages/$PAGE_ID" \
               -H "Authorization: Bearer ${{ secrets.NOTION_API_KEY }}" \
               -H "Notion-Version: 2022-06-28" \
               -H "Content-Type: application/json" \
               --data "{
                 \"properties\": {
                   \"Status\": {
-                    \"select\": {\"name\": \"Done\"}
+                    \"select\": {
+                      \"name\": \"Done\"
+                    }
                   }
                 }
               }"
+            echo "Successfully updated Notion task ${{ env.TS_TASK_ID }} to Done."
           else
-            echo "No matching Notion Task found for $TS_TASK_ID"
+            echo "No matching Notion Task found for ${{ env.TS_TASK_ID }}."
           fi
