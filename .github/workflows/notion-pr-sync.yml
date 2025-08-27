@@ -59,7 +59,7 @@ jobs:
               --data "{
                 \"properties\": {
                   \"Status\": {
-                    \"select\": {
+                    \"status\": {
                       \"name\": \"Done\"
                     }
                   }
