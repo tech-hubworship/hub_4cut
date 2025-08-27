@@ -1,10 +1,10 @@
-name: "✉️ Issue"
+name: "‼️ 제목의 TS 번호는 꼭 노션 Task와 동일한 번호로 기입해주세요 ‼️"
 description: "이슈 작성"
 title: "TS-번호: "
 body:
   - type: textarea
     attributes:
-      label: 📄 설명
+      label: 📄 이슈 설명
       description: "어떤 이슈인지 작성해주세요."
       placeholder: "자세할수록 좋아요 :)"
     validations:
@@ -13,7 +13,7 @@ body:
     attributes:
       label: ✅ 작업할 내용
       description: "할 일을 체크박스 형태로 작성해주세요."
-      placeholder: "-[] (...)"
+      placeholder: "-[ ] (...)"
     validations:
       required: true
   - type: textarea
