@@ -1,0 +1,45 @@
+{
+  "frame4x6": {
+    "imageName": "frame(4x6).png",
+    "totalWidth": 501,
+    "totalHeight": 752,
+    "regions": [
+      {
+        "id": 1,
+        "name": "topLeft",
+        "x": 41,
+        "y": 40,
+        "width": 200,
+        "height": 297,
+        "position": 0
+      },
+      {
+        "id": 2,
+        "name": "topRight",
+        "x": 261,
+        "y": 40,
+        "width": 200,
+        "height": 297,
+        "position": 1
+      },
+      {
+        "id": 3,
+        "name": "bottomLeft",
+        "x": 41,
+        "y": 357,
+        "width": 200,
+        "height": 297,
+        "position": 2
+      },
+      {
+        "id": 4,
+        "name": "bottomRight",
+        "x": 261,
+        "y": 357,
+        "width": 200,
+        "height": 297,
+        "position": 3
+      }
+    ]
+  }
+}
