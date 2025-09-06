@@ -1,6 +1,0 @@
-module Pods_HubPhotoBooth_HubPhotoBoothTests {
-  umbrella header "Pods-HubPhotoBooth-HubPhotoBoothTests-umbrella.h"
-
-  export *
-  module * { export * }
-}
