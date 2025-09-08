@@ -1,15 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Dimensions, StatusBar } from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../types';
 import { CameraView } from '../components';
 import { colors, typography, spacing } from '../constants/theme';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
+type CameraCaptureNavigationProp = StackNavigationProp<RootStackParamList, 'CameraCapture'>;
+type CameraCaptureRouteProp = RouteProp<RootStackParamList, 'CameraCapture'>;
+
 const CameraCaptureScreen: React.FC = () => {
-  const navigation = useNavigation();
-  const route = useRoute();
-  const { selectedFrame, basicFrameType } = (route.params as any) || {};
+  const navigation = useNavigation<CameraCaptureNavigationProp>();
+  const route = useRoute<CameraCaptureRouteProp>();
+  const { selectedFrame, basicFrameType } = route.params || {};
   
   // 상태 관리
   const [capturedPhotos, setCapturedPhotos] = useState<string[]>([]);
@@ -79,7 +84,7 @@ const CameraCaptureScreen: React.FC = () => {
       if (newPhotos.length >= 4) {
         console.log('모든 사진 촬영 완료!');
         setTimeout(() => {
-          (navigation as any).navigate('PhotoEdit', {
+          navigation.navigate('PhotoEdit', {
             photos: newPhotos,
             selectedFrame: selectedFrame || 'basic_frame',
           });

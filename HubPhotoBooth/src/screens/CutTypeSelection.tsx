@@ -21,13 +21,13 @@ const CutTypeSelection: React.FC = () => {
   };
 
   const handleSelectVertical = () => {
-    navigation.navigate('CameraCapture' as any, {
+    navigation.navigate('CameraCapture', {
       basicFrameType: '2x6',
     });
   };
 
   const handleSelectGrid = () => {
-    navigation.navigate('CameraCapture' as any, {
+    navigation.navigate('CameraCapture', {
       basicFrameType: '4x6',
     });
   };
