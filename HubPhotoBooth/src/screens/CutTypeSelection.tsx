@@ -1,10 +1,21 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../types';
 import { Container, Header } from '../components';
 import { colors, typography, spacing, layout, borderRadius } from '../constants/theme';
+
+const { width, height } = Dimensions.get('window');
+
+// 기준 레이아웃 크기
+const BASE_WIDTH = 834;
+const BASE_HEIGHT = 1194;
+
+// 비율 계산
+const scaleX = width / BASE_WIDTH;
+const scaleY = height / BASE_HEIGHT;
+const scale = Math.min(scaleX, scaleY);
 
 type CutTypeSelectionNavigationProp = StackNavigationProp<RootStackParamList, 'CutTypeSelection'>;
 type CutTypeSelectionRouteProp = RouteProp<RootStackParamList, 'CutTypeSelection'>;
@@ -21,69 +32,57 @@ const CutTypeSelection: React.FC = () => {
   };
 
   const handleSelectVertical = () => {
-    navigation.navigate('CameraCapture', {
-      basicFrameType: '2x6',
-    });
+    navigation.navigate('Vertical4CutCameraCapture' as any);
   };
 
   const handleSelectGrid = () => {
-    navigation.navigate('CameraCapture', {
-      basicFrameType: '4x6',
-    });
+    navigation.navigate('Grid2x2CameraCapture' as any);
   };
 
   return (
     <Container padding="none" backgroundColor={colors.primary}>
-      <Header
-        title="컷 유형 선택"
-        onBack={handleBack}
-        showBack
-      />
-      
       <View style={styles.content}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={handleBack}
+          activeOpacity={0.8}
+        >
+          <Image
+            source={require('../../assets/icon/icon_back.png')}
+            style={styles.backButtonImage}
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
+        
+        <Text style={styles.headerTitle}>컷 유형 선택</Text>
+        
         <Text style={styles.subtitle}>
           원하는 레이아웃을 선택해 주세요
         </Text>
         
-        <View style={styles.optionsContainer}>
-          {/* 세로형 그리드 옵션 */}
+        <View style={styles.cutSelectionContainer}>
           <TouchableOpacity
-            style={styles.optionCard}
+            style={styles.cutButton1}
             onPress={handleSelectVertical}
             activeOpacity={0.8}
           >
-            <Text style={styles.optionTitle}>세로형 그리드</Text>
-            <View style={styles.previewContainer}>
-              <View style={styles.verticalPreview}>
-                <View style={styles.verticalStrip}>
-                  <View style={styles.photoSlot} />
-                  <View style={styles.photoSlot} />
-                  <View style={styles.photoSlot} />
-                  <View style={styles.photoSlot} />
-                </View>
-              </View>
-            </View>
+            <Image
+              source={require('../../assets/image/cut_grid_1.png')}
+              style={styles.cutButtonImage}
+              resizeMode="contain"
+            />
           </TouchableOpacity>
           
-          {/* 2x2 그리드 옵션 */}
           <TouchableOpacity
-            style={styles.optionCard}
+            style={styles.cutButton2}
             onPress={handleSelectGrid}
             activeOpacity={0.8}
           >
-            <Text style={styles.optionTitle}>2x2 그리드</Text>
-            <View style={styles.previewContainer}>
-              <View style={styles.gridPreview}>
-                <View style={styles.gridFrame}>
-                  <View style={styles.gridPhotoSlots}>
-                    <View style={styles.gridPhotoSlot} />
-                    <View style={styles.gridPhotoSlot} />
-                    <View style={styles.gridPhotoSlot} />
-                    <View style={styles.gridPhotoSlot} />
-                  </View>
-                </View>
-              </View>
-            </View>
+            <Image
+              source={require('../../assets/image/cut_grid_2.png')}
+              style={styles.cutButtonImage}
+              resizeMode="contain"
+            />
           </TouchableOpacity>
         </View>
       </View>
@@ -92,84 +91,83 @@ const CutTypeSelection: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
+  backButton: {
+    width: 52 * scale,
+    height: 52 * scale,
+    alignSelf: 'flex-start',
+    marginTop: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  backButtonImage: {
+    width: '100%',
+    height: '100%',
+  },
+  headerTitle: {
+    fontFamily: 'Pretendard',
+    fontWeight: '700',
+    fontSize: 44 * scale,
+    letterSpacing: -0.03 * 44 * scale,
+    textAlign: 'center',
+    color: '#FFFFFF',
+    marginBottom: spacing.md,
+    textShadowColor: 'rgba(0, 0, 0, 0.8)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
+  },
   content: {
     flex: 1,
     paddingHorizontal: layout.padding.screen,
-    paddingTop: spacing.xl,
+    paddingTop: spacing.lg,
+    alignItems: 'center',
   },
   subtitle: {
     fontFamily: 'Pretendard',
     fontWeight: '400',
-    fontSize: typography.fontSize.lg,
-    lineHeight: 33.4,
-    letterSpacing: typography.letterSpacing.normal,
+    fontSize: 28 * scale,
+    letterSpacing: -0.03 * 28 * scale,
     textAlign: 'center',
-    color: colors.textGray,
-    marginBottom: spacing.xxl,
+    color: '#AAAAAA',
+    textShadowColor: 'rgba(0, 0, 0, 0.8)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+    alignSelf: 'center',
+    marginHorizontal: spacing.lg,
   },
-  optionsContainer: {
+  cutSelectionContainer: {
     flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
     gap: spacing.xl,
+    paddingHorizontal: spacing.lg,
   },
-  optionCard: {
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.xl,
-    padding: spacing.xl,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.16)',
-    alignItems: 'center',
+  cutButton1: {
+    width: 516 * scaleX,
+    height: 360 * scaleY,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 4.65,
+    elevation: 8,
   },
-  optionTitle: {
-    fontFamily: 'Pretendard',
-    fontWeight: '700',
-    fontSize: typography.fontSize.xl,
-    lineHeight: 38.2,
-    letterSpacing: typography.letterSpacing.tight,
-    color: colors.white,
-    marginBottom: spacing.lg,
+  cutButton2: {
+    width: 516 * scaleX,
+    height: 360 * scaleY,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 4.65,
+    elevation: 8,
   },
-  previewContainer: {
-    alignItems: 'center',
-  },
-  verticalPreview: {
-    alignItems: 'center',
-  },
-  verticalStrip: {
-    width: 160,
-    height: 240,
-    backgroundColor: colors.white,
-    borderRadius: borderRadius.sm,
-    padding: spacing.sm,
-    justifyContent: 'space-between',
-  },
-  photoSlot: {
+  cutButtonImage: {
     width: '100%',
-    height: 40,
-    backgroundColor: colors.surfaceLight,
-    borderRadius: borderRadius.sm,
-  },
-  gridPreview: {
-    alignItems: 'center',
-  },
-  gridFrame: {
-    width: 240,
-    height: 240,
-    backgroundColor: colors.white,
-    borderRadius: borderRadius.sm,
-    padding: spacing.sm,
-  },
-  gridPhotoSlots: {
-    flex: 1,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  gridPhotoSlot: {
-    width: '45%',
-    height: '45%',
-    backgroundColor: colors.surfaceLight,
-    borderRadius: borderRadius.sm,
+    height: '100%',
+    borderRadius: borderRadius.xl,
   },
 });
 

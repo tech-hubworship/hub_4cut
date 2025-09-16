@@ -213,6 +213,12 @@ export type RootStackParamList = {
   CutTypeSelection: {
     frameType?: string;
   };
+  Grid2x2CameraCapture: {
+    selectedFrame?: string;
+  };
+  Vertical4CutCameraCapture: {
+    selectedFrame?: string;
+  };
   PhotoEdit: {
     photos: string[];
     selectedFrame?: string;

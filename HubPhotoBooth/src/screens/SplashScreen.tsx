@@ -1,9 +1,11 @@
 import React, {useEffect, useRef, useCallback} from 'react';
-import {View, StyleSheet, Animated, StatusBar} from 'react-native';
+import {View, StyleSheet, Animated, StatusBar, ImageBackground, Dimensions} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import {useAppDispatch, useAppSelector} from '../store';
 import {loadUserFromStorage} from '../store/slices/userSlice';
 import {COLORS, TYPOGRAPHY, SPACING, APP_CONFIG} from '../constants';
+
+const { width, height } = Dimensions.get('window');
 
 const SplashScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -80,85 +82,54 @@ const SplashScreen: React.FC = () => {
   }, [isAuthenticated, isLoading, navigation]);
 
   return (
-    <View style={styles.container}>
-      <StatusBar
-        barStyle="light-content"
-        backgroundColor={COLORS.PRIMARY.PURPLE}
-        translucent={false}
-      />
+    <ImageBackground
+      source={require('../../assets/image/mainImage.png')}
+      style={styles.backgroundImage}
+      resizeMode="cover"
+    >
+      <View style={styles.overlay}>
+        <StatusBar
+          barStyle="light-content"
+          backgroundColor="transparent"
+          translucent={true}
+        />
 
-      <Animated.View
-        style={[
-          styles.content,
-          {
-            opacity: fadeAnim,
-            transform: [{scale: scaleAnim}],
-          },
-        ]}>
-        {/* 로고 영역 */}
         <Animated.View
           style={[
-            styles.logoContainer,
+            styles.content,
             {
-              transform: [{scale: logoScaleAnim}],
+              opacity: fadeAnim,
+              transform: [{scale: scaleAnim}],
             },
           ]}>
-          {/* 4개 사각형 로고 */}
-          <View style={styles.logoGrid}>
-            <View style={[styles.logoSquare, styles.logoSquare1]} />
-            <View style={[styles.logoSquare, styles.logoSquare2]} />
-            <View style={[styles.logoSquare, styles.logoSquare3]} />
-            <View style={[styles.logoSquare, styles.logoSquare4]} />
-          </View>
+
         </Animated.View>
 
-        {/* 앱 이름 */}
-        <Animated.Text
-          style={[
-            styles.appName,
-            {
-              opacity: textFadeAnim,
-            },
-          ]}>
-          {APP_CONFIG.NAME}
-        </Animated.Text>
-
-        {/* 앱 설명 */}
-        <Animated.Text
-          style={[
-            styles.appDescription,
-            {
-              opacity: textFadeAnim,
-            },
-          ]}>
-          우리 허브의 소중한 순간을 담다
-        </Animated.Text>
-
-        {/* 버전 정보 */}
-        <Animated.Text
-          style={[
-            styles.versionText,
-            {
-              opacity: textFadeAnim,
-            },
-          ]}>
-          v{APP_CONFIG.VERSION}
-        </Animated.Text>
-      </Animated.View>
-
-      {/* 로딩 인디케이터 */}
-      {isLoading && (
-        <View style={styles.loadingContainer}>
-          <View style={styles.loadingDot} />
-          <View style={[styles.loadingDot, styles.loadingDot2]} />
-          <View style={[styles.loadingDot, styles.loadingDot3]} />
-        </View>
-      )}
-    </View>
+        {/* 로딩 인디케이터 */}
+        {isLoading && (
+          <View style={styles.loadingContainer}>
+            <View style={styles.loadingDot} />
+            <View style={[styles.loadingDot, styles.loadingDot2]} />
+            <View style={[styles.loadingDot, styles.loadingDot3]} />
+          </View>
+        )}
+      </View>
+    </ImageBackground>
   );
 };
 
 const styles = StyleSheet.create({
+  backgroundImage: {
+    flex: 1,
+    width: width,
+    height: height,
+  },
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)', // 약간의 어둠 효과로 텍스트 가독성 향상
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   container: {
     flex: 1,
     backgroundColor: COLORS.PRIMARY.PURPLE,
@@ -214,9 +185,9 @@ const styles = StyleSheet.create({
     color: COLORS.WHITE,
     textAlign: 'center',
     marginBottom: SPACING.SM,
-    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowColor: 'rgba(0, 0, 0, 0.8)',
     textShadowOffset: {width: 0, height: 2},
-    textShadowRadius: 4,
+    textShadowRadius: 6,
   },
 
   appDescription: {
@@ -226,12 +197,18 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: SPACING.XL,
     opacity: 0.9,
+    textShadowColor: 'rgba(0, 0, 0, 0.8)',
+    textShadowOffset: {width: 0, height: 1},
+    textShadowRadius: 4,
   },
 
   versionText: {
     fontSize: TYPOGRAPHY.FONT_SIZE.SM,
     color: COLORS.WHITE,
     opacity: 0.7,
+    textShadowColor: 'rgba(0, 0, 0, 0.8)',
+    textShadowOffset: {width: 0, height: 1},
+    textShadowRadius: 3,
   },
 
   loadingContainer: {

@@ -24,6 +24,8 @@ import SplashScreen from './src/screens/SplashScreen';
 import MainScreen from './src/screens/MainScreen';
 import PhotoCaptureScreen from './src/screens/PhotoCaptureScreen';
 import CameraCaptureScreen from './src/screens/CameraCaptureScreen';
+import Grid2x2CameraCaptureScreen from './src/screens/Grid2x2CameraCaptureScreen';
+import Vertical4CutCameraCaptureScreen from './src/screens/Vertical4CutCameraCaptureScreen';
 import PhotoEditScreen from './src/screens/PhotoEditScreen';
 import FrameSelection from './src/screens/FrameSelection';
 import CutTypeSelection from './src/screens/CutTypeSelection';
@@ -114,6 +116,26 @@ const App: React.FC = () => {
             <Stack.Screen
               name="CameraCapture"
               component={CameraCaptureScreen}
+              options={{
+                gestureEnabled: true,
+                presentation: 'modal',
+              }}
+            />
+
+            {/* 2x2 그리드 카메라 촬영 화면 */}
+            <Stack.Screen
+              name="Grid2x2CameraCapture"
+              component={Grid2x2CameraCaptureScreen}
+              options={{
+                gestureEnabled: true,
+                presentation: 'modal',
+              }}
+            />
+
+            {/* 세로 4컷 카메라 촬영 화면 */}
+            <Stack.Screen
+              name="Vertical4CutCameraCapture"
+              component={Vertical4CutCameraCaptureScreen}
               options={{
                 gestureEnabled: true,
                 presentation: 'modal',
