@@ -210,22 +210,35 @@ export type RootStackParamList = {
   FrameSelection: {
     frameType?: string;
   };
-  CutTypeSelection: {
-    frameType?: string;
-  };
   Grid2x2CameraCapture: {
     selectedFrame?: string;
   };
   Vertical4CutCameraCapture: {
     selectedFrame?: string;
   };
+  SpecialFrameThemeSelection: undefined;
+  SpecialFrameCameraCapture: {
+    selectedTheme: string;
+  };
   PhotoEdit: {
+    photos: string[];
+    selectedFrame?: string;
+  };
+  FrameThemeSelection: {
     photos: string[];
     selectedFrame?: string;
   };
   FramePreview: {
     photos: string[];
     selectedFrame?: string;
+    selectedTheme?: string;
+  };
+  Printing: {
+    photos: string[];
+    cloudinaryPhoto?: string;
+    selectedFrame?: string;
+    selectedTheme?: string;
+    quantity: number;
   };
   PrintSettings: undefined;
   QRCode: undefined;

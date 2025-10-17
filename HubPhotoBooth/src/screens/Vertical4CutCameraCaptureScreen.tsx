@@ -5,6 +5,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../types';
 import { CameraView } from '../components';
 import { colors, typography, spacing } from '../constants/theme';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -31,12 +32,31 @@ const Vertical4CutCameraCaptureScreen: React.FC = () => {
   const [isCountingDown, setIsCountingDown] = useState(false);
   const [showPreparationScreen, setShowPreparationScreen] = useState(true);
   const [prepCountdown, setPrepCountdown] = useState(3);
+  const [exposureValue, setExposureValue] = useState(1.5);
+  const [skinBrightness, setSkinBrightness] = useState(0.5);
   
   // ref 관리
   const cameraRef = useRef<any>(null);
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const prepCountdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const isCapturingRef = useRef(false);
+  
+  // 컴포넌트 마운트 시 촬영 설정 로드
+  useEffect(() => {
+    loadCaptureSettings();
+  }, []);
+
+  // 촬영 설정 로드
+  const loadCaptureSettings = async () => {
+    try {
+      const savedExposureValue = await AsyncStorage.getItem('EXPOSURE_VALUE');
+      const savedSkinBrightness = await AsyncStorage.getItem('SKIN_BRIGHTNESS');
+      if (savedExposureValue) setExposureValue(parseFloat(savedExposureValue));
+      if (savedSkinBrightness) setSkinBrightness(parseFloat(savedSkinBrightness));
+    } catch (error) {
+      console.error('촬영 설정 로드 실패:', error);
+    }
+  };
   
   // 준비 화면 카운트다운
   useEffect(() => {
@@ -128,20 +148,20 @@ const Vertical4CutCameraCaptureScreen: React.FC = () => {
           });
         }, 500);
       } else {
-        // 다음 카운트다운 시작
+        // 다음 카운트다운 시작 (카메라 안정화를 위해 시간 연장)
         console.log('세로 4컷 다음 카운트다운 시작...');
         setTimeout(() => {
           startCountdown();
-        }, 1000);
+        }, 1500);
       }
       
       return newPhotos;
     });
     
-    // 촬영 상태 리셋
+    // 촬영 상태 리셋 (카메라 안정화를 위해 시간 연장)
     setTimeout(() => {
       isCapturingRef.current = false;
-    }, 500);
+    }, 1000);
   };
   
   const handleBack = () => {
@@ -182,9 +202,16 @@ const Vertical4CutCameraCaptureScreen: React.FC = () => {
       <CameraView
         ref={cameraRef}
         style={styles.camera}
+        aspectRatio="2:3"
         guideType="2x6"
         showGuideLines={true}
         onPhotoCapture={handlePhotoCapture}
+        enableFaceCorrection={true}
+        exposure={exposureValue} // 조명값
+        skinBrightness={skinBrightness} // 피부 밝기 보정 (뽀얗게)
+        enhanceColors={true}
+        enableHdr={true}
+        enableHighQualityPhotos={true}
       />
       
       {/* 남은 시간 텍스트 */}

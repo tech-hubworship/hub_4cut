@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { Button } from '../components/common/Button';
+import Button from '../components/common/Button';
 import { RootStackParamList } from '../types';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
@@ -29,10 +29,9 @@ const PhotoCaptureScreen: React.FC = () => {
     setShowBasicFrameModal(true);
   };
 
-  const handleSelectBasicFrameType = (frameType: 'vertical' | 'grid') => {
+  const handleSelectBasicFrameType = (frameType: '2x6' | '4x6') => {
     setShowBasicFrameModal(false);
     navigation.navigate('CameraCapture', { 
-      frameType: 'basic',
       basicFrameType: frameType 
     });
   };
@@ -133,7 +132,7 @@ const PhotoCaptureScreen: React.FC = () => {
             {/* 4장 세로 배치 옵션 */}
             <TouchableOpacity
               style={styles.frameTypeOption}
-              onPress={() => handleSelectBasicFrameType('vertical')}
+              onPress={() => handleSelectBasicFrameType('2x6')}
               activeOpacity={0.8}
             >
               <View style={styles.frameTypeHeader}>
@@ -154,7 +153,7 @@ const PhotoCaptureScreen: React.FC = () => {
             {/* 2장x2장 그리드 배치 옵션 */}
             <TouchableOpacity
               style={styles.frameTypeOption}
-              onPress={() => handleSelectBasicFrameType('grid')}
+              onPress={() => handleSelectBasicFrameType('4x6')}
               activeOpacity={0.8}
             >
               <View style={styles.frameTypeHeader}>

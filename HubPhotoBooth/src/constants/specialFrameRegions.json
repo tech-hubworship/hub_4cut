@@ -1,0 +1,59 @@
+{
+  "specialFrame": {
+    "totalWidth": 289,
+    "totalHeight": 430,
+    "themes": {
+      "hyungyo": {
+        "name": "형교 프레임",
+        "imageName": "special/hyungyo.png",
+        "totalWidth": 289,
+        "totalHeight": 430,
+        "overlays": [
+          "special/hyungyo/1.png",
+          "special/hyungyo/2.png",
+          "special/hyungyo/3.png",
+          "special/hyungyo/4.png"
+        ],
+        "regions": [
+          {
+            "id": 1,
+            "name": "topLeft",
+            "x": 23,
+            "y": 22.5,
+            "width": 114,
+            "height": 171,
+            "position": 0
+          },
+          {
+            "id": 2,
+            "name": "topRight",
+            "x": 151,
+            "y": 22.5,
+            "width": 114,
+            "height": 171,
+            "position": 1
+          },
+          {
+            "id": 3,
+            "name": "bottomLeft",
+            "x": 23,
+            "y": 206.5,
+            "width": 114,
+            "height": 171,
+            "position": 2
+          },
+          {
+            "id": 4,
+            "name": "bottomRight",
+            "x": 151,
+            "y": 206.5,
+            "width": 114,
+            "height": 171,
+            "position": 3
+          }
+        ]
+      }
+    }
+  }
+}
+

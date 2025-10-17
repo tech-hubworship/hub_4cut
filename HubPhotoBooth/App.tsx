@@ -6,12 +6,14 @@
  */
 
 import 'react-native-gesture-handler';
+import 'react-native-url-polyfill/auto';
 import React, {useEffect} from 'react';
 import {StatusBar, LogBox} from 'react-native';
 import {Provider} from 'react-redux';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
+import {animationConfigs} from './src/utils/animations';
 
 // Redux 스토어
 import store from './src/store';
@@ -26,10 +28,13 @@ import PhotoCaptureScreen from './src/screens/PhotoCaptureScreen';
 import CameraCaptureScreen from './src/screens/CameraCaptureScreen';
 import Grid2x2CameraCaptureScreen from './src/screens/Grid2x2CameraCaptureScreen';
 import Vertical4CutCameraCaptureScreen from './src/screens/Vertical4CutCameraCaptureScreen';
+import SpecialFrameThemeSelectionScreen from './src/screens/SpecialFrameThemeSelectionScreen';
+import SpecialFrameCameraCaptureScreen from './src/screens/SpecialFrameCameraCaptureScreen';
 import PhotoEditScreen from './src/screens/PhotoEditScreen';
 import FrameSelection from './src/screens/FrameSelection';
-import CutTypeSelection from './src/screens/CutTypeSelection';
+import FrameThemeSelectionScreen from './src/screens/FrameThemeSelectionScreen';
 import FramePreviewScreen from './src/screens/FramePreviewScreen';
+import PrintingScreen from './src/screens/PrintingScreen';
 import PrintSettingsScreen from './src/screens/PrintSettingsScreen';
 import QRCodeScreen from './src/screens/QRCodeScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
@@ -83,6 +88,26 @@ const App: React.FC = () => {
                   },
                 };
               },
+              transitionSpec: {
+                open: {
+                  animation: 'timing',
+                  config: {
+                    duration: 300,
+                  },
+                },
+                close: {
+                  animation: 'timing',
+                  config: {
+                    duration: 250,
+                  },
+                },
+              },
+              cardStyle: {
+                backgroundColor: 'transparent',
+              },
+              gestureEnabled: true,
+              gestureDirection: 'horizontal',
+              gestureResponseDistance: 50,
             }}>
             {/* 스플래시 화면 */}
             <Stack.Screen
@@ -90,6 +115,7 @@ const App: React.FC = () => {
               component={SplashScreen}
               options={{
                 gestureEnabled: false,
+                ...animationConfigs.default,
               }}
             />
 
@@ -99,6 +125,31 @@ const App: React.FC = () => {
               component={MainScreen}
               options={{
                 gestureEnabled: false,
+                cardStyleInterpolator: ({current}) => ({
+                  cardStyle: {
+                    opacity: current.progress.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [0, 1],
+                    }),
+                  },
+                }),
+                transitionSpec: {
+                  open: {
+                    animation: 'timing',
+                    config: {
+                      duration: 800,
+                    },
+                  },
+                  close: {
+                    animation: 'timing',
+                    config: {
+                      duration: 300,
+                    },
+                  },
+                },
+                cardStyle: {
+                  backgroundColor: 'transparent',
+                },
               }}
             />
 
@@ -109,6 +160,7 @@ const App: React.FC = () => {
               options={{
                 gestureEnabled: true,
                 presentation: 'modal',
+                ...animationConfigs.modal,
               }}
             />
 
@@ -119,6 +171,7 @@ const App: React.FC = () => {
               options={{
                 gestureEnabled: true,
                 presentation: 'modal',
+                ...animationConfigs.camera,
               }}
             />
 
@@ -129,6 +182,7 @@ const App: React.FC = () => {
               options={{
                 gestureEnabled: true,
                 presentation: 'modal',
+                ...animationConfigs.camera,
               }}
             />
 
@@ -139,6 +193,28 @@ const App: React.FC = () => {
               options={{
                 gestureEnabled: true,
                 presentation: 'modal',
+                ...animationConfigs.camera,
+              }}
+            />
+
+            {/* 특수 프레임 테마 선택 화면 */}
+            <Stack.Screen
+              name="SpecialFrameThemeSelection"
+              component={SpecialFrameThemeSelectionScreen}
+              options={{
+                gestureEnabled: true,
+                ...animationConfigs.default,
+              }}
+            />
+
+            {/* 특수 프레임 카메라 촬영 화면 */}
+            <Stack.Screen
+              name="SpecialFrameCameraCapture"
+              component={SpecialFrameCameraCaptureScreen}
+              options={{
+                gestureEnabled: true,
+                presentation: 'modal',
+                ...animationConfigs.camera,
               }}
             />
 
@@ -149,18 +225,10 @@ const App: React.FC = () => {
               options={{
                 gestureEnabled: true,
                 presentation: 'modal',
+                ...animationConfigs.modal,
               }}
             />
 
-            {/* 컷 유형 선택 화면 */}
-            <Stack.Screen
-              name="CutTypeSelection"
-              component={CutTypeSelection}
-              options={{
-                gestureEnabled: true,
-                presentation: 'modal',
-              }}
-            />
 
             {/* 프레임 미리보기 화면 */}
             <Stack.Screen
@@ -169,6 +237,7 @@ const App: React.FC = () => {
               options={{
                 gestureEnabled: true,
                 presentation: 'modal',
+                ...animationConfigs.preview,
               }}
             />
 
@@ -179,6 +248,29 @@ const App: React.FC = () => {
               options={{
                 gestureEnabled: true,
                 presentation: 'modal',
+                ...animationConfigs.edit,
+              }}
+            />
+
+            {/* 프레임 테마 선택 화면 */}
+            <Stack.Screen
+              name="FrameThemeSelection"
+              component={FrameThemeSelectionScreen}
+              options={{
+                gestureEnabled: true,
+                presentation: 'modal',
+                ...animationConfigs.modal,
+              }}
+            />
+
+            {/* 인화 중 화면 */}
+            <Stack.Screen
+              name="Printing"
+              component={PrintingScreen}
+              options={{
+                gestureEnabled: false,
+                presentation: 'modal',
+                ...animationConfigs.modal,
               }}
             />
 
@@ -189,6 +281,7 @@ const App: React.FC = () => {
               options={{
                 gestureEnabled: true,
                 presentation: 'modal',
+                ...animationConfigs.modal,
               }}
             />
 
@@ -199,6 +292,7 @@ const App: React.FC = () => {
               options={{
                 gestureEnabled: true,
                 presentation: 'modal',
+                ...animationConfigs.preview,
               }}
             />
 
@@ -208,6 +302,7 @@ const App: React.FC = () => {
               component={SettingsScreen}
               options={{
                 gestureEnabled: true,
+                ...animationConfigs.default,
               }}
             />
 
@@ -217,6 +312,7 @@ const App: React.FC = () => {
               component={ProfileScreen}
               options={{
                 gestureEnabled: true,
+                ...animationConfigs.default,
               }}
             />
           </Stack.Navigator>

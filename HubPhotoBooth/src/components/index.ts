@@ -3,6 +3,8 @@ export { default as Header } from './common/Header';
 export { default as Container } from './common/Container';
 export { default as Button } from './common/Button';
 export { default as FrameCard } from './common/FrameCard';
+export { default as AnimatedView } from './common/AnimatedView';
+export { default as AnimatedButton } from './common/AnimatedButton';
 
 // Camera Components
 export { default as CameraView } from './camera/CameraView';

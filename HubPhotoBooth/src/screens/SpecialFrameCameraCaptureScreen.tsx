@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Dimensions, StatusBar, ImageBackground } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, StatusBar, ImageBackground, Image } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../types';
 import { CameraView } from '../components';
-import { colors, typography, spacing } from '../constants/theme';
+import { colors } from '../constants/theme';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
@@ -18,26 +18,22 @@ const scaleX = screenWidth / BASE_WIDTH;
 const scaleY = screenHeight / BASE_HEIGHT;
 const scale = Math.min(scaleX, scaleY);
 
-type Grid2x2CameraCaptureNavigationProp = StackNavigationProp<RootStackParamList, 'Grid2x2CameraCapture'>;
-type Grid2x2CameraCaptureRouteProp = RouteProp<RootStackParamList, 'Grid2x2CameraCapture'>;
+type SpecialFrameCameraCaptureNavigationProp = StackNavigationProp<RootStackParamList, 'SpecialFrameCameraCapture'>;
+type SpecialFrameCameraCaptureRouteProp = RouteProp<RootStackParamList, 'SpecialFrameCameraCapture'>;
 
-const Grid2x2CameraCaptureScreen: React.FC = () => {
-  const navigation = useNavigation<Grid2x2CameraCaptureNavigationProp>();
-  const route = useRoute<Grid2x2CameraCaptureRouteProp>();
-  const { selectedFrame } = route.params || {};
+const SpecialFrameCameraCaptureScreen: React.FC = () => {
+  const navigation = useNavigation<SpecialFrameCameraCaptureNavigationProp>();
+  const route = useRoute<SpecialFrameCameraCaptureRouteProp>();
+  const { selectedTheme } = route.params || { selectedTheme: 'classic' };
   
   // 상태 관리
   const [capturedPhotos, setCapturedPhotos] = useState<string[]>([]);
-  const [countdown, setCountdown] = useState(8);
+  const [countdown, setCountdown] = useState(10);
   const [isCountingDown, setIsCountingDown] = useState(false);
   const [showPreparationScreen, setShowPreparationScreen] = useState(true);
   const [prepCountdown, setPrepCountdown] = useState(3);
   const [isCameraWarmingUp, setIsCameraWarmingUp] = useState(false);
   const [warmupPhotos, setWarmupPhotos] = useState(0);
-  
-  // 촬영 설정
-  const [maxPhotoCount, setMaxPhotoCount] = useState(6);
-  const [timerDuration, setTimerDuration] = useState(8);
   const [exposureValue, setExposureValue] = useState(1.5);
   const [skinBrightness, setSkinBrightness] = useState(0.5);
   
@@ -55,24 +51,27 @@ const Grid2x2CameraCaptureScreen: React.FC = () => {
   // 촬영 설정 로드
   const loadCaptureSettings = async () => {
     try {
-      const savedPhotoCount = await AsyncStorage.getItem('PHOTO_COUNT');
-      const savedTimerDuration = await AsyncStorage.getItem('TIMER_DURATION');
       const savedExposureValue = await AsyncStorage.getItem('EXPOSURE_VALUE');
       const savedSkinBrightness = await AsyncStorage.getItem('SKIN_BRIGHTNESS');
-      
-      if (savedPhotoCount) setMaxPhotoCount(parseInt(savedPhotoCount));
-      if (savedTimerDuration) {
-        const duration = parseInt(savedTimerDuration);
-        setTimerDuration(duration);
-        setCountdown(duration);
-      }
       if (savedExposureValue) setExposureValue(parseFloat(savedExposureValue));
       if (savedSkinBrightness) setSkinBrightness(parseFloat(savedSkinBrightness));
     } catch (error) {
       console.error('촬영 설정 로드 실패:', error);
     }
   };
-
+  
+  // 촬영 중인 사진에 따라 해당 번호의 오버레이 이미지 가져오기
+  const getOverlayImage = (photoIndex: number) => {
+    const overlayImages = [
+      require('../../assets/frames/special/hyungyo/1.png'),
+      require('../../assets/frames/special/hyungyo/2.png'),
+      require('../../assets/frames/special/hyungyo/3.png'),
+      require('../../assets/frames/special/hyungyo/4.png'),
+    ];
+    
+    return overlayImages[photoIndex] || overlayImages[0];
+  };
+  
   // 준비 화면 카운트다운과 백그라운드 워밍업
   useEffect(() => {
     if (showPreparationScreen) {
@@ -109,7 +108,7 @@ const Grid2x2CameraCaptureScreen: React.FC = () => {
 
   // 카메라 워밍업 시작
   const startCameraWarmup = async () => {
-    console.log('=== 카메라 워밍업 시작 (백그라운드) ===');
+    console.log('=== 특수 프레임 카메라 워밍업 시작 (백그라운드) ===');
     setIsCameraWarmingUp(true);
     setWarmupPhotos(0);
     
@@ -129,15 +128,15 @@ const Grid2x2CameraCaptureScreen: React.FC = () => {
       setWarmupPhotos(i + 1);
     }
     
-    console.log('=== 카메라 워밍업 완료 ===');
+    console.log('=== 특수 프레임 카메라 워밍업 완료 ===');
     setIsCameraWarmingUp(false);
   };
   
   // 카운트다운 시작
   const startCountdown = () => {
-    console.log('=== 2x2 카운트다운 시작 ===');
+    console.log('=== 특수 프레임 카운트다운 시작 ===');
     setIsCountingDown(true);
-    setCountdown(timerDuration);
+    setCountdown(8);
     
     // 카운트다운 인터벌 시작
     countdownIntervalRef.current = setInterval(() => {
@@ -148,7 +147,7 @@ const Grid2x2CameraCaptureScreen: React.FC = () => {
           clearInterval(countdownIntervalRef.current!);
           setIsCountingDown(false);
           takePhoto();
-          return timerDuration;
+          return 10;
         }
         return prev - 1;
       });
@@ -168,7 +167,7 @@ const Grid2x2CameraCaptureScreen: React.FC = () => {
     }
     
     isCapturingRef.current = true;
-    console.log('2x2 사진 촬영 시작...');
+    console.log('특수 프레임 사진 촬영 시작...');
     
     try {
       await cameraRef.current.takePhoto();
@@ -195,20 +194,20 @@ const Grid2x2CameraCaptureScreen: React.FC = () => {
     // 실제 촬영된 사진 추가
     setCapturedPhotos(prev => {
       const newPhotos = [...prev, photo.path];
-      console.log(`2x2 촬영된 사진: ${newPhotos.length}/${maxPhotoCount}`);
+      console.log(`특수 프레임 촬영된 사진: ${newPhotos.length}/4`);
       
-      // 설정된 매수만큼 촬영되면 다음 화면으로 이동
-      if (newPhotos.length >= maxPhotoCount) {
-        console.log('2x2 모든 사진 촬영 완료!');
+      // 4장이 되면 다음 화면으로 이동
+      if (newPhotos.length >= 4) {
+        console.log('특수 프레임 모든 사진 촬영 완료!');
         setTimeout(() => {
-          navigation.navigate('PhotoEdit', {
+          navigation.navigate('PhotoEdit' as any, {
             photos: newPhotos,
-            selectedFrame: selectedFrame || 'grid_2x2_frame',
+            selectedFrame: 'special_frame',
           });
         }, 500);
       } else {
         // 다음 카운트다운 시작 (카메라 안정화를 위해 시간 연장)
-        console.log('2x2 다음 카운트다운 시작...');
+        console.log('특수 프레임 다음 카운트다운 시작...');
         setTimeout(() => {
           startCountdown();
         }, 1000);
@@ -240,7 +239,7 @@ const Grid2x2CameraCaptureScreen: React.FC = () => {
   }, []);
   
   // 남은 사진 수 계산
-  const remainingPhotos = maxPhotoCount - capturedPhotos.length;
+  const remainingPhotos = 4 - capturedPhotos.length;
   
   // 준비 화면 렌더링
   if (showPreparationScreen) {
@@ -257,13 +256,14 @@ const Grid2x2CameraCaptureScreen: React.FC = () => {
   return (
     <View style={styles.container}>
       <StatusBar hidden />
+      
       {/* 카메라 뷰 - 전체 화면 */}
       <CameraView
         ref={cameraRef}
         style={styles.camera}
         aspectRatio="2:3"
         guideType="4x6"
-        showGuideLines={true}
+        showGuideLines={false}
         onPhotoCapture={handlePhotoCapture}
         enableFaceCorrection={true}
         isWarmup={isCameraWarmingUp}
@@ -273,6 +273,15 @@ const Grid2x2CameraCaptureScreen: React.FC = () => {
         enableHdr={true}
         enableHighQualityPhotos={true}
       />
+      
+      {/* 프레임 오버레이 - 카메라 비율 영역 안에만 표시 */}
+      <View style={styles.frameOverlayContainer} pointerEvents="none">
+        <Image
+          source={getOverlayImage(capturedPhotos.length)}
+          style={styles.frameOverlay}
+          resizeMode="cover"
+        />
+      </View>
       
       {/* 남은 시간 텍스트 */}
       {isCountingDown && countdown > 0 && (
@@ -293,22 +302,12 @@ const Grid2x2CameraCaptureScreen: React.FC = () => {
         </View>
       )}
       
-      {/* 카메라 워밍업 표시 (백그라운드에서 실행되므로 숨김) */}
-      {false && isCameraWarmingUp && (
-        <View style={styles.warmupContainer}>
-          <Text style={styles.warmupText}>카메라 준비 중...</Text>
-          <Text style={styles.warmupProgressText}>
-            {warmupPhotos}/3
-          </Text>
-        </View>
-      )}
-      
       {/* 하단 정보 - 카메라 위에 오버레이 */}
       <View style={styles.bottomInfo}>
         <Text style={styles.captureCountText}></Text>
         <View style={styles.remainingBox}>
           <Text style={styles.remainingText}>
-            {capturedPhotos.length}/{maxPhotoCount}
+            {capturedPhotos.length}/4
           </Text>
         </View>
       </View>
@@ -322,17 +321,34 @@ const styles = StyleSheet.create({
     width: screenWidth,
     height: screenHeight,
   },
-  overlay: {
+  container: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    backgroundColor: colors.surface,
   },
-  content: {
+  camera: {
     flex: 1,
+    width: screenWidth,
+    height: screenHeight,
+  },
+  frameOverlayContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 100,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  countdownContainer: {
-    alignItems: 'center',
+  frameOverlay: {
+    height: screenHeight, // 화면 높이에 맞춤
+    aspectRatio: 2 / 3, // 2:3 비율 유지 (자동으로 너비 계산됨)
+  },
+  remainingTimeContainer: {
+    position: 'absolute',
+    top: 74 * scaleY,
+    left: 356 * scaleX,
+    zIndex: 1000,
   },
   remainingTimeText: {
     fontFamily: 'Pretendard',
@@ -344,40 +360,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     width: 122 * scaleX,
     height: 41 * scaleY,
-  },
-  countdownText: {
-    fontSize: 80 * scale,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    textShadowColor: 'rgba(0, 0, 0, 0.8)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
-    marginBottom: 20 * scaleY,
-  },
-  readyText: {
-    fontSize: 32 * scale,
-    fontWeight: '600',
-    color: '#FFFFFF',
-    textAlign: 'center',
-    textShadowColor: 'rgba(0, 0, 0, 0.8)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3,
-  },
-  container: {
-    flex: 1,
-    backgroundColor: colors.surface,
-  },
-  camera: {
-    flex: 1,
-    width: screenWidth,
-    height: screenHeight,
-
-  },
-  remainingTimeContainer: {
-    position: 'absolute',
-    top: 74 * scaleY,
-    left: 356 * scaleX,
-    zIndex: 1000,
   },
   cameraCountdownContainer: {
     position: 'absolute',
@@ -398,7 +380,6 @@ const styles = StyleSheet.create({
   },
   countdownTextRed: {
     color: '#FF474A'
-
   },
   bottomInfo: {
     position: 'absolute',
@@ -435,34 +416,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#FFFFFF',
   },
-  warmupContainer: {
-    position: 'absolute',
-    top: 400 * scaleY,
-    left: 0,
-    right: 0,
-    alignItems: 'center',
-    zIndex: 1000,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    paddingVertical: 20,
-    paddingHorizontal: 40,
-    marginHorizontal: 100,
-    borderRadius: 20,
-  },
-  warmupText: {
-    fontFamily: 'Pretendard',
-    fontWeight: '600',
-    fontSize: 24 * scale,
-    color: '#FFFFFF',
-    textAlign: 'center',
-    marginBottom: 10,
-  },
-  warmupProgressText: {
-    fontFamily: 'Pretendard',
-    fontWeight: '700',
-    fontSize: 32 * scale,
-    color: '#FFFFFF',
-    textAlign: 'center',
-  },
 });
 
-export default Grid2x2CameraCaptureScreen;
+export default SpecialFrameCameraCaptureScreen;
+

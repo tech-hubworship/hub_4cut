@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, Animated } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../types';
@@ -28,83 +28,153 @@ const FrameSelection: React.FC = () => {
   const routeParams = route.params || {};
   const { frameType } = routeParams;
 
+  // 현재 화면 상태 관리 (frameSelection | cutTypeSelection)
+  const [currentScreen, setCurrentScreen] = useState<'frameSelection' | 'cutTypeSelection'>('frameSelection');
+  const [slideAnim] = useState(new Animated.Value(0));
+
   const handleBack = () => {
-    navigation.goBack();
+    if (currentScreen === 'cutTypeSelection') {
+      // 컷 유형 선택에서 프레임 선택으로 돌아가기
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start(() => {
+        setCurrentScreen('frameSelection');
+      });
+    } else {
+      // 프레임 선택에서 이전 화면으로 돌아가기
+      navigation.goBack();
+    }
   };
 
   const handleSelectBasicFrame = () => {
-    navigation.navigate('CutTypeSelection', { frameType: 'basic' });
+    // 컷 유형 선택 화면으로 슬라이드 전환
+    setCurrentScreen('cutTypeSelection');
+    handleSelectGrid();
+    Animated.timing(slideAnim, {
+      toValue: -width,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
   };
 
   const handleSelectSpecialFrame = () => {
-    navigation.navigate('CameraCapture' as any, {
-      selectedFrame: 'special_frame_1',
-    });
+    navigation.navigate('SpecialFrameThemeSelection' as any);
   };
 
-  const frames = [
-    {
-      id: 'basic_frame',
-      name: '기본 프레임',
-      type: 'basic' as const,
-      layout: '4x6' as const,
-    },
-    {
-      id: 'special_frame',
-      name: '특수 프레임',
-      type: 'special' as const,
-      layout: 'special' as const,
-    },
-  ];
+  const handleSelectVertical = () => {
+    navigation.navigate('Vertical4CutCameraCapture' as any);
+  };
 
-  return (
-    <Container padding="none" backgroundColor={colors.primary}>
-      <View style={styles.content}>
+  const handleSelectGrid = () => {
+    navigation.navigate('Grid2x2CameraCapture' as any);
+  };
+
+
+  // 프레임 선택 화면 렌더링
+  const renderFrameSelection = () => (
+    <View style={styles.screenContainer}>
+      <Text style={styles.headerTitle}>프레임 선택</Text>
+      
+      <Text style={styles.subtitle}>
+        원하는 프레임을 선택하고 촬영을 시작하세요
+      </Text>
+      
+      <View style={styles.frameSelectionContainer}>
         <TouchableOpacity
-          style={styles.backButton}
-          onPress={handleBack}
+          style={styles.frameButton1}
+          onPress={handleSelectBasicFrame}
           activeOpacity={0.8}
         >
           <Image
-            source={require('../../assets/icon/icon_back.png')}
-            style={styles.backButtonImage}
+            source={require('../../assets/image/button_frame_1.png')}
+            style={styles.frameButtonImage}
             resizeMode="contain"
           />
         </TouchableOpacity>
         
-        <Text style={styles.headerTitle}>프레임 선택</Text>
-        
-        <Text style={styles.subtitle}>
-          원하는 프레임을 선택하고 촬영을 시작하세요
-        </Text>
-        
-        <View style={styles.frameSelectionContainer}>
-          <TouchableOpacity
-            style={styles.frameButton1}
-            onPress={handleSelectBasicFrame}
-            activeOpacity={0.8}
-          >
-            <Image
-              source={require('../../assets/image/button_frame_1.png')}
-              style={styles.frameButtonImage}
-              resizeMode="contain"
-            />
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            style={styles.frameButton2}
-            onPress={handleSelectSpecialFrame}
-            activeOpacity={0.8}
-          >
-            <Image
-              source={require('../../assets/image/button_frame_2.png')}
-              style={styles.frameButtonImage}
-              resizeMode="contain"
-            />
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity
+          style={styles.frameButton2}
+          onPress={handleSelectSpecialFrame}
+          activeOpacity={0.8}
+        >
+          <Image
+            source={require('../../assets/image/button_frame_2.png')}
+            style={styles.frameButtonImage}
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
       </View>
-    </Container>
+    </View>
+  );
+
+  // 컷 유형 선택 화면 렌더링
+  const renderCutTypeSelection = () => (
+    <View style={styles.screenContainer}>
+      <Text style={styles.headerTitle}>컷 유형 선택</Text>
+      
+      <Text style={styles.subtitle}>
+        원하는 레이아웃을 선택해 주세요
+      </Text>
+      
+      <View style={styles.cutSelectionContainer}>
+        <TouchableOpacity
+          style={styles.cutButton1}
+          onPress={handleSelectVertical}
+          activeOpacity={0.8}
+          disabled={false}
+        >
+          <Image
+            source={require('../../assets/image/cut_grid_1.png')}
+            style={styles.cutButtonImage}
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={styles.cutButton2}
+          onPress={handleSelectGrid}
+          activeOpacity={0.8}
+        >
+          <Image
+            source={require('../../assets/image/cut_grid_2.png')}
+            style={styles.cutButtonImage}
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
+  return (
+    <View style={styles.content}>
+      {/* 고정된 뒤로가기 버튼 */}
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={handleBack}
+        activeOpacity={0.8}
+      >
+        <Image
+          source={require('../../assets/icon/icon_back.png')}
+          style={styles.backButtonImage}
+          resizeMode="contain"
+        />
+      </TouchableOpacity>
+      
+      {/* 슬라이드 애니메이션 컨테이너 */}
+      <Animated.View 
+        style={[
+          styles.animatedContainer,
+          {
+            transform: [{ translateX: slideAnim }]
+          }
+        ]}
+      >
+        {renderFrameSelection()}
+        {renderCutTypeSelection()}
+      </Animated.View>
+    </View>
   );
 };
 
@@ -113,8 +183,8 @@ const styles = StyleSheet.create({
     width: 52 * scale,
     height: 52 * scale,
     alignSelf: 'flex-start',
-    marginTop: spacing.md,
-    marginBottom: spacing.lg,
+    marginTop: 44 * scale,
+    marginLeft: 44 * scale,
   },
   backButtonImage: {
     width: '100%',
@@ -127,16 +197,26 @@ const styles = StyleSheet.create({
     letterSpacing: -0.03 * 44 * scale,
     textAlign: 'center',
     color: '#FFFFFF',
-    marginBottom: spacing.md,
     textShadowColor: 'rgba(0, 0, 0, 0.8)',
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 4,
   },
   content: {
     flex: 1,
-    paddingHorizontal: layout.padding.screen,
-    paddingTop: spacing.xl,
+    backgroundColor: colors.primary,
+    position: 'relative',
+  },
+  screenContainer: {
+    width: width,
+    flex: 1,
     alignItems: 'center',
+    justifyContent: 'center',
+
+  },
+  animatedContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    width: width * 2, // 두 화면의 너비
   },
   subtitle: {
     fontFamily: 'Pretendard',
@@ -145,7 +225,7 @@ const styles = StyleSheet.create({
     letterSpacing: -0.03 * 28 * scale,
     textAlign: 'center',
     color: '#AAAAAA',
-    marginBottom: spacing.xl,
+    marginTop: 12 * scale,
     textShadowColor: 'rgba(0, 0, 0, 0.8)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 3,
@@ -155,7 +235,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     gap: spacing.xl,
-    paddingHorizontal: spacing.lg,
+    
   },
   frameButton1: {
     width: 516 * scaleX,
@@ -182,6 +262,42 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   frameButtonImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: borderRadius.xl,
+  },
+  cutSelectionContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: spacing.xl,
+    paddingHorizontal: spacing.lg,
+  },
+  cutButton1: {
+    width: 516 * scaleX,
+    height: 360 * scaleY,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 4.65,
+    elevation: 8,
+  },
+  cutButton2: {
+    width: 516 * scaleX,
+    height: 360 * scaleY,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 4.65,
+    elevation: 8,
+  },
+  cutButtonImage: {
     width: '100%',
     height: '100%',
     borderRadius: borderRadius.xl,

@@ -78,9 +78,10 @@ const PhotoGrid: React.FC<PhotoGridProps> = ({
 
   // 프레임 이미지 경로 결정
   const getFrameImage = () => {
-    // 현재는 4x6 프레임만 사용 가능
-    return require('../../../assets/frames/frame(4x6).png');
+    // 현재는 4x6 프레임만 사용 가능, 기본값으로 black.png 사용
+    return require('../../../assets/frames/frame(4*6)/black.png');
   };
+
 
   return (
     <View style={styles.container}>

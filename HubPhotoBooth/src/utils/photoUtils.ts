@@ -1,4 +1,5 @@
 import { PhotoFile } from 'react-native-vision-camera';
+import { Image as RNImage } from 'react-native';
 
 // 사진 파일을 URI로 변환
 export const photoFileToUri = (photo: PhotoFile): string => {
@@ -131,6 +132,17 @@ export const isImageFile = (filename: string): boolean => {
   const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
   const extension = getFileExtension(filename).toLowerCase();
   return imageExtensions.includes(extension);
+};
+
+// 이미지 크기 가져오기 (Promise 기반)
+export const getImageSize = (uri: string): Promise<{ width: number; height: number }> => {
+  return new Promise((resolve, reject) => {
+    RNImage.getSize(
+      uri,
+      (width, height) => resolve({ width, height }),
+      (error) => reject(error)
+    );
+  });
 };
 
 

@@ -17,37 +17,56 @@ const SplashScreen: React.FC = () => {
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
   const logoScaleAnim = useRef(new Animated.Value(0)).current;
   const textFadeAnim = useRef(new Animated.Value(0)).current;
+  const backgroundFadeAnim = useRef(new Animated.Value(0)).current;
 
   // 애니메이션 시작
   const startAnimations = useCallback(() => {
-    // 로고 애니메이션
-    Animated.sequence([
-      Animated.timing(logoScaleAnim, {
-        toValue: 1,
-        duration: 800,
-        useNativeDriver: true,
-      }),
-      Animated.timing(textFadeAnim, {
-        toValue: 1,
-        duration: 600,
-        useNativeDriver: true,
-      }),
-    ]).start();
+    // 전체 화면 페이드인 (먼저 시작)
+    Animated.timing(backgroundFadeAnim, {
+      toValue: 1,
+      duration: 1000,
+      useNativeDriver: true,
+    }).start();
 
     // 전체 페이드인
     Animated.timing(fadeAnim, {
       toValue: 1,
-      duration: 1000,
+      duration: 600,
       useNativeDriver: true,
     }).start();
 
-    // 스케일 애니메이션
-    Animated.timing(scaleAnim, {
-      toValue: 1,
-      duration: 1000,
-      useNativeDriver: true,
-    }).start();
-  }, [logoScaleAnim, textFadeAnim, fadeAnim, scaleAnim]);
+    // 로고 스케일 애니메이션 (약간의 딜레이 후)
+    Animated.sequence([
+      Animated.delay(200),
+      Animated.spring(logoScaleAnim, {
+        toValue: 1,
+        tension: 100,
+        friction: 8,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    // 텍스트 페이드인 (로고 후)
+    Animated.sequence([
+      Animated.delay(600),
+      Animated.timing(textFadeAnim, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    // 전체 스케일 애니메이션 (부드럽게)
+    Animated.sequence([
+      Animated.delay(100),
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        tension: 80,
+        friction: 10,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [logoScaleAnim, textFadeAnim, fadeAnim, scaleAnim, backgroundFadeAnim]);
 
   // 사용자 데이터 로드
   const loadUserData = useCallback(async () => {
@@ -70,40 +89,31 @@ const SplashScreen: React.FC = () => {
   useEffect(() => {
     if (!isLoading) {
       const timer = setTimeout(() => {
+        // 바로 네비게이션 (페이드 아웃 효과 제거)
         if (isAuthenticated) {
           navigation.navigate('Main' as never);
         } else {
           navigation.navigate('Main' as never); // 임시로 메인으로 이동
         }
-      }, 2000); // 2초 후 자동 이동
+      }, 2500); // 2.5초 후 자동 이동
 
       return () => clearTimeout(timer);
     }
   }, [isAuthenticated, isLoading, navigation]);
 
   return (
-    <ImageBackground
-      source={require('../../assets/image/mainImage.png')}
-      style={styles.backgroundImage}
-      resizeMode="cover"
-    >
-      <View style={styles.overlay}>
+    <Animated.View style={{flex: 1, opacity: backgroundFadeAnim}}>
+      <ImageBackground
+        source={require('../../assets/image/mainImage.png')}
+        style={styles.backgroundImage}
+        resizeMode="cover"
+      >
+        <View style={styles.overlay}>
         <StatusBar
           barStyle="light-content"
           backgroundColor="transparent"
           translucent={true}
         />
-
-        <Animated.View
-          style={[
-            styles.content,
-            {
-              opacity: fadeAnim,
-              transform: [{scale: scaleAnim}],
-            },
-          ]}>
-
-        </Animated.View>
 
         {/* 로딩 인디케이터 */}
         {isLoading && (
@@ -113,8 +123,9 @@ const SplashScreen: React.FC = () => {
             <View style={[styles.loadingDot, styles.loadingDot3]} />
           </View>
         )}
-      </View>
-    </ImageBackground>
+        </View>
+      </ImageBackground>
+    </Animated.View>
   );
 };
 

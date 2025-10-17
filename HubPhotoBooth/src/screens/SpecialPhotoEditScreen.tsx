@@ -3,13 +3,12 @@ import { View, Text, StyleSheet, Alert, TouchableOpacity, ScrollView, Image, Dim
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../types';
-import { Container, Header, Button } from '../components';
-import { colors, typography, spacing, layout } from '../constants/theme';
-import frameRegions from '../constants/frameRegions.json';
+import { colors, typography, spacing } from '../constants/theme';
+import specialFrameRegions from '../constants/specialFrameRegions.json';
 import Svg, { Path } from 'react-native-svg';
-import SpecialPhotoEditScreen from './SpecialPhotoEditScreen';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+
 const { width, height } = Dimensions.get('window');
+
 // 기준 레이아웃 크기
 const BASE_WIDTH = 834;
 const BASE_HEIGHT = 1194;
@@ -19,73 +18,44 @@ const scaleX = width / BASE_WIDTH;
 const scaleY = height / BASE_HEIGHT;
 const scale = Math.min(scaleX, scaleY);
 
-type PhotoEditScreenNavigationProp = StackNavigationProp<RootStackParamList, 'PhotoEdit'>;
-type PhotoEditScreenRouteProp = RouteProp<RootStackParamList, 'PhotoEdit'>;
+type SpecialPhotoEditScreenNavigationProp = StackNavigationProp<RootStackParamList, 'PhotoEdit'>;
+type SpecialPhotoEditScreenRouteProp = RouteProp<RootStackParamList, 'PhotoEdit'>;
 
-const PhotoEditScreen: React.FC = () => {
-  const navigation = useNavigation<PhotoEditScreenNavigationProp>();
-  const route = useRoute<PhotoEditScreenRouteProp>();
+const SpecialPhotoEditScreen: React.FC = () => {
+  const navigation = useNavigation<SpecialPhotoEditScreenNavigationProp>();
+  const route = useRoute<SpecialPhotoEditScreenRouteProp>();
   const { photos = [], selectedFrame } = route.params;
-
-  // 특수 프레임인 경우 SpecialPhotoEditScreen으로 전환
-  if (selectedFrame === 'special_frame') {
-    return <SpecialPhotoEditScreen />;
-  }
 
   const [selectedPhotos, setSelectedPhotos] = useState<Array<{ id: string; uri: string; position?: number } | null>>(
     Array(4).fill(null)
   );
-  
+
   // 프레임 이미지의 실제 렌더링 크기를 추적
   const [frameLayout, setFrameLayout] = useState({ width: 0, height: 0, x: 0, y: 0 });
-  
-  // 활성화된 첫 번째 테마를 저장
-  const [currentTheme, setCurrentTheme] = useState<string>('classic');
 
-  // 컴포넌트 마운트 시 활성화된 첫 번째 프레임 테마 불러오기
-  useEffect(() => {
-    loadFirstActiveTheme();
-  }, []);
-
-  const loadFirstActiveTheme = async () => {
-    try {
-      const savedSettings = await AsyncStorage.getItem('FRAME_SETTINGS');
-      if (savedSettings) {
-        const settings: {[key: string]: boolean} = JSON.parse(savedSettings);
-        // 활성화된 테마 중 첫 번째 것을 찾기
-        const activeThemes = Object.keys(settings).filter(themeId => settings[themeId]);
-        if (activeThemes.length > 0) {
-          setCurrentTheme(activeThemes[0]);
-          console.log('PhotoEditScreen - 활성화된 첫 번째 테마:', activeThemes[0]);
-        }
-      }
-    } catch (error) {
-      console.error('프레임 설정 로드 실패:', error);
-    }
-  };
-
-  // 테마에 따른 프레임 이미지 경로 가져오기
+  // 형교 프레임 이미지 가져오기
   const getFrameImage = () => {
-    const themeConfig = frameRegions.frame4x6.themes[currentTheme as keyof typeof frameRegions.frame4x6.themes];
-    if (themeConfig?.imageName === 'frame(4*6)/black.png') {
-      return require('../../assets/frames/frame(4*6)/black.png');
-    } else if (themeConfig?.imageName === 'frame(4*6)/white.png') {
-      return require('../../assets/frames/frame(4*6)/white.png');
-    } else if (themeConfig?.imageName === 'frame(4*6)/leadership.png') {
-      return require('../../assets/frames/frame(4*6)/leadership.png');
-    }
-    // 기본값
-    return require('../../assets/frames/frame(4*6)/black.png');
+    return require('../../assets/frames/special/hyungyo.png');
   };
 
-  // 테마에 따른 사진 영역 정보 가져오기
+  // 형교 오버레이 이미지 가져오기
+  const getHyungyoOverlay = (index: number) => {
+    const overlays = [
+      require('../../assets/frames/special/hyungyo/1.png'),
+      require('../../assets/frames/special/hyungyo/2.png'),
+      require('../../assets/frames/special/hyungyo/3.png'),
+      require('../../assets/frames/special/hyungyo/4.png'),
+    ];
+    return overlays[index] || overlays[0];
+  };
+
+  // 특수 프레임 사진 영역 정보 가져오기
   const getThemeRegions = () => {
-    const themeConfig = frameRegions.frame4x6.themes[currentTheme as keyof typeof frameRegions.frame4x6.themes];
-    return themeConfig?.regions || frameRegions.frame4x6.themes.classic.regions;
+    return specialFrameRegions.specialFrame.themes.hyungyo.regions;
   };
 
   useEffect(() => {
-    console.log('PhotoEditScreen - 받은 사진들:', photos);
+    console.log('SpecialPhotoEditScreen - 받은 사진들:', photos);
     // 촬영된 사진이 있으면 초기화
     if (photos.length > 0) {
       const initialPhotos = [...selectedPhotos];
@@ -99,12 +69,12 @@ const PhotoEditScreen: React.FC = () => {
         }
       });
       setSelectedPhotos(initialPhotos);
-      console.log('PhotoEditScreen - 초기화된 사진들:', initialPhotos);
+      console.log('SpecialPhotoEditScreen - 초기화된 사진들:', initialPhotos);
     }
   }, [photos]);
 
   const handleBack = () => {
-    //navigation.goBack();
+    navigation.goBack();
   };
 
   const handlePhotoPress = (photo: any, index: number) => {
@@ -140,12 +110,6 @@ const PhotoEditScreen: React.FC = () => {
     }
   };
 
-  const handlePhotoRemove = (index: number) => {
-    const newSelectedPhotos = [...selectedPhotos];
-    newSelectedPhotos[index] = null;
-    setSelectedPhotos(newSelectedPhotos);
-  };
-
   const handleNext = () => {
     const filledSlots = selectedPhotos.filter(p => p !== null);
     if (filledSlots.length < 4) {
@@ -153,10 +117,11 @@ const PhotoEditScreen: React.FC = () => {
       return;
     }
     
-    // 프레임 테마 선택 화면으로 이동
-    navigation.navigate('FrameThemeSelection' as any, {
+    // 특수 프레임 미리보기 화면으로 이동
+    navigation.navigate('FramePreview' as any, {
       photos: selectedPhotos.filter(p => p !== null).map(p => p!.uri),
-      selectedFrame: selectedFrame || 'default',
+      selectedFrame: 'special_frame',
+      selectedTheme: 'hyungyo',
     });
   };
 
@@ -171,8 +136,8 @@ const PhotoEditScreen: React.FC = () => {
 
   // JSON 좌표를 실제 프레임 크기에 맞춰 변환하는 함수
   const getScaledRegion = (region: any) => {
-    const jsonWidth = frameRegions.frame4x6.totalWidth;
-    const jsonHeight = frameRegions.frame4x6.totalHeight;
+    const jsonWidth = specialFrameRegions.specialFrame.totalWidth;
+    const jsonHeight = specialFrameRegions.specialFrame.totalHeight;
     
     const scaleX = frameLayout.width / jsonWidth;
     const scaleY = frameLayout.height / jsonHeight;
@@ -187,7 +152,7 @@ const PhotoEditScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      {/* 상단 검은색 영역 */}
+      {/* 상단 영역 */}
       <View style={styles.topSection}>
         {/* 상단 요소들을 가로로 배치 */}
         <View style={styles.topRow}>
@@ -213,10 +178,8 @@ const PhotoEditScreen: React.FC = () => {
         
         {/* 제목 */}
         <Text style={styles.title}>원하는 사진을 골라주세요</Text>
-        
 
-        
-        {/* 프레임 이미지와 사진 오버레이 */}
+        {/* 특수 프레임 미리보기 - 프레임 위에 사진 배치 */}
         <View style={styles.frameContainer}>
           {/* 프레임 이미지를 배경으로 사용 */}
           <Image
@@ -231,12 +194,6 @@ const PhotoEditScreen: React.FC = () => {
             {frameLayout.width > 0 && frameLayout.height > 0 && getThemeRegions().map((region, index) => {
               const photo = selectedPhotos[region.position];
               const scaledRegion = getScaledRegion(region);
-              
-              console.log(`Region ${region.name}:`, {
-                original: region,
-                scaled: scaledRegion,
-                frameLayout
-              });
               
               return (
                 <View 
@@ -258,17 +215,20 @@ const PhotoEditScreen: React.FC = () => {
                       onPress={() => handlePhotoPress(photo, region.position)}
                       activeOpacity={0.8}
                     >
+                      {/* 사진 */}
                       <Image 
                         source={{ uri: photo.uri }} 
                         style={styles.framePhoto} 
                         resizeMode="cover"
-                        resizeMethod="scale" // 고품질 리사이징
-                        fadeDuration={0} // 즉시 표시
+                        resizeMethod="scale"
+                        fadeDuration={0}
                       />
-                      {/* 위치 번호 표시 */}
-                      {/* <View style={styles.positionBadge}>
-                        <Text style={styles.positionText}>{region.position + 1}</Text>
-                      </View> */}
+                      {/* 해당 사진 위에 hyungyo 오버레이 */}
+                      <Image
+                        source={getHyungyoOverlay(region.position)}
+                        style={styles.overlayImageOnPhoto}
+                        resizeMode="cover"
+                      />
                     </TouchableOpacity>
                   ) : (
                     <View style={styles.emptyPhotoSlot} />
@@ -279,8 +239,8 @@ const PhotoEditScreen: React.FC = () => {
           </View>
         </View>
       </View>
-      
-      {/* 하단 하얀색 영역 */}
+
+      {/* 하단 영역 */}
       <View style={styles.bottomSection}>
         {/* 하단 배경 SVG */}
         <Svg width="834" height="503" viewBox="0 0 834 503" fill="none" style={styles.bottomSvg}>
@@ -364,14 +324,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   topSection: {
-
     backgroundColor: '#FFFFFF',
     alignItems: 'center',
   },
   topRow: {
     flexDirection: 'row',
     alignItems: 'center',
-
     width: '100%',
     paddingTop: 44 * scale,
   },
@@ -381,25 +339,21 @@ const styles = StyleSheet.create({
     marginLeft: 44 * scale,
     flexShrink: 0,
   },
-
   title: {
     fontFamily: 'Pretendard',
     fontWeight: '700',
-    fontSize: 40, // 2.5rem
+    fontSize: 40,
     color: '#000000',
     textAlign: 'center',
-    marginTop: 30 * scale, // 7.3125rem = 117px, // 24.0625rem = 385px
-    letterSpacing: -1.2, // -3% = -1.2px
+    marginTop: 30 * scale,
+    letterSpacing: -1.2,
   },
   counterBox: {
-    display: 'flex',
-    flexDirection: 'row', // Horizontal(가로)
+    flexDirection: 'row',
     width: 88 * scale,
     height: 34 * scale,
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 10,
-    flexShrink: 0,
     borderRadius: 10,
     marginLeft: 277 * scale,
     backgroundColor: '#000000',
@@ -409,17 +363,24 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontSize: 22 * scale,
     color: '#FFFFFF',
-    letterSpacing: -0.66 * scale ,
+    letterSpacing: -0.66 * scale,
   },
   frameContainer: {
-    width: 289 * scale, // 프레임 이미지 크기를 키움
-    height: 430 * scale, // 4x6 비율에 맞춰 키움
+    width: 289 * scaleX,
+    height: 430 * scaleY,
     marginTop: 22 * scale,
     position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',
-    boxShadow: '0 6.396px 21.747px 2.559px rgba(0, 0, 0, 0.09)',
-    borderRadius: 5.984 * scale,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 6.396,
+    },
+    shadowOpacity: 0.09,
+    shadowRadius: 21.747,
+    elevation: 5,
+    borderRadius: 8,
   },
   frameImage: {
     width: '100%',
@@ -427,7 +388,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     zIndex: 1,
     borderRadius: 8,
-    
   },
   photosOverlay: {
     position: 'absolute',
@@ -438,16 +398,13 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
   photoSlot: {
-
     overflow: 'hidden',
     position: 'relative',
-    backgroundColor: 'transparent',
     transform: [{ scale: 1.02 }],
   },
   photoInFrame: {
     width: '100%',
     height: '100%',
-
     overflow: 'hidden',
     position: 'relative',
   },
@@ -464,28 +421,16 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.2)',
     borderStyle: 'dashed',
   },
-  positionBadge: {
+  overlayImageOnPhoto: {
     position: 'absolute',
-    top: spacing.xs,
-    right: spacing.xs,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: colors.error,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  positionText: {
-    fontFamily: typography.fontFamily.primary,
-    fontWeight: '700',
-    fontSize: 26,
-    color: colors.surface,
-    letterSpacing: -0.78,
+    width: '100%',
+    height: '100%',
+    top: 0,
+    left: 0,
+    zIndex: 10,
   },
   bottomSection: {
-
     marginTop: 44 * scale,
-
     position: 'relative',
   },
   bottomSvg: {
@@ -522,15 +467,14 @@ const styles = StyleSheet.create({
     marginTop: 30 * scale,
   },
   photoItem: {
-    width: 180, // 원본 비율을 유지하기 위해 너비만 고정
-    height: 267, // 세로로 꽉 차게 높이 설정
+    width: 180,
+    height: 267,
     marginRight: 18 * scale,
     aspectRatio: 60/89,
     borderRadius: 8 * scale,
     backgroundColor: '#2F3031',
     overflow: 'hidden',
     position: 'relative',
-
   },
   selectedPhotoItem: {
     borderWidth: 2,
@@ -539,6 +483,7 @@ const styles = StyleSheet.create({
   photoImage: {
     width: '100%',
     height: '100%',
+    
   },
   selectedBadge: {
     position: 'absolute',
@@ -585,5 +530,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PhotoEditScreen;
-
+export default SpecialPhotoEditScreen;
